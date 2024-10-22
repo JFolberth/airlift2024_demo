@@ -1,0 +1,53 @@
+resources:
+  repositories:
+  - repository: templates
+    type: github
+    name: JFolberth/TheYAMLPipelineOne
+    endpoint: JFolberth
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+trigger:
+- none
+
+parameters:
+- name: environmentObjects
+  type: object
+  default:
+    - environmentName: 'dev2'
+      regionAbrvs: ['eus']
+    - environmentName: 'tst2'
+      regionAbrvs: ['eus']
+      deploymentStack: true
+
+
+- name: templateFileName
+  type: string
+  default: 'main'
+- name: templateDirectory
+  type: string 
+  default: 'infrastructure'
+- name: serviceName
+  type: string
+  default: 'airlift'
+- name: bicepParamExt
+  type: boolean
+  default: true
+
+stages:
+- template: stages/bicep_build_stage.yml@templates
+  parameters:
+    environmentObjects: ${{ parameters.environmentObjects }}
+    templateFileName: ${{ parameters.templateFileName }}
+    serviceName: ${{ parameters.serviceName }}
+    templateDirectory: ${{ parameters.templateDirectory }}
+    bicepParamExt: ${{ parameters.bicepParamExt }}
+    
+- template: stages/bicep_deploy_stage.yml@templates
+  parameters:
+    environmentObjects: ${{ parameters.environmentObjects }}
+    templateFileName: ${{ parameters.templateFileName }}
+    serviceName: ${{ parameters.serviceName }}
+    templateDirectory: ${{ parameters.templateDirectory }}
+    bicepParamExt: ${{ parameters.bicepParamExt }}
